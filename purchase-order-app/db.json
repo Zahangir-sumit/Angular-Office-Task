@@ -1,0 +1,75 @@
+{
+  "purchaseOrders": [
+    {
+      "id": 1,
+      "poNumber": "PO-2024-001",
+      "supplierId": 1,
+      "warehouseId": 1,
+      "shippingAddress": "123 Main St, Warehouse A, City A",
+      "vatRate": 15,
+      "orderDate": "2024-01-15",
+      "status": "Approved",
+      "memo": "Urgent order for Q1 inventory",
+      "items": [
+        {
+          "id": 1,
+          "productId": 1,
+          "quantity": 10,
+          "unitPrice": 25.50,
+          "lineTotal": 255
+        },
+        {
+          "id": 2,
+          "productId": 2,
+          "quantity": 5,
+          "unitPrice": 45.75,
+          "lineTotal": 228.75
+        }
+      ],
+      "subtotal": 483.75,
+      "vatAmount": 72.56,
+      "grandTotal": 556.31
+    },
+    {
+      "id": 2,
+      "poNumber": "PO-2024-002",
+      "supplierId": 2,
+      "warehouseId": 2,
+      "shippingAddress": "456 Oak St, Warehouse B, City B",
+      "vatRate": 10,
+      "orderDate": "2024-01-20",
+      "status": "Draft",
+      "memo": "Office supplies order",
+      "items": [
+        {
+          "id": 3,
+          "productId": 3,
+          "quantity": 20,
+          "unitPrice": 8.99,
+          "lineTotal": 179.80
+        }
+      ],
+      "subtotal": 179.80,
+      "vatAmount": 17.98,
+      "grandTotal": 197.78
+    }
+  ],
+  "suppliers": [
+    { "id": 1, "name": "Tech Supplies Inc.", "email": "contact@techsupplies.com", "phone": "+1-555-0101" },
+    { "id": 2, "name": "Office World Ltd.", "email": "sales@officeworld.com", "phone": "+1-555-0102" },
+    { "id": 3, "name": "Global Distributors", "email": "orders@globaldist.com", "phone": "+1-555-0103" }
+  ],
+  "warehouses": [
+    { "id": 1, "name": "Main Warehouse", "address": "123 Main St, City A, State X, 10001" },
+    { "id": 2, "name": "East Coast Hub", "address": "456 Oak St, City B, State Y, 10002" },
+    { "id": 3, "name": "West Coast Center", "address": "789 Pine St, City C, State Z, 10003" }
+  ],
+  "products": [
+    { "id": 1, "name": "Wireless Keyboard", "sku": "KB-WL-001", "category": "Electronics" },
+    { "id": 2, "name": "Ergonomic Office Chair", "sku": "CHAIR-ERG-002", "category": "Furniture" },
+    { "id": 3, "name": "Stapler Premium", "sku": "STAPLER-003", "category": "Office Supplies" },
+    { "id": 4, "name": "Monitor 24inch", "sku": "MON-24-004", "category": "Electronics" },
+    { "id": 5, "name": "Desk Organizer", "sku": "ORG-DESK-005", "category": "Office Supplies" }
+  ],
+  "vatRates": [5, 10, 15, 20]
+}
