@@ -15,7 +15,7 @@
           "id": 1,
           "productId": 1,
           "quantity": 10,
-          "unitPrice": 25.50,
+          "unitPrice": 25.5,
           "lineTotal": 255
         },
         {
@@ -46,30 +46,115 @@
           "productId": 3,
           "quantity": 20,
           "unitPrice": 8.99,
-          "lineTotal": 179.80
+          "lineTotal": 179.8
         }
       ],
-      "subtotal": 179.80,
+      "subtotal": 179.8,
       "vatAmount": 17.98,
       "grandTotal": 197.78
+    },
+    {
+      "poNumber": "PO-3",
+      "supplierId": "1",
+      "warehouseId": "1",
+      "shippingAddress": "test",
+      "vatRate": 15,
+      "orderDate": "2025-11-06",
+      "status": "Draft",
+      "memo": "test test",
+      "items": [
+        {
+          "productId": "1",
+          "quantity": 1,
+          "unitPrice": 20,
+          "lineTotal": 20
+        },
+        {
+          "productId": "2",
+          "quantity": 1,
+          "unitPrice": 30,
+          "lineTotal": 30
+        }
+      ],
+      "subtotal": 50,
+      "vatAmount": 7.5,
+      "grandTotal": 57.5,
+      "id": 3
     }
   ],
   "suppliers": [
-    { "id": 1, "name": "Tech Supplies Inc.", "email": "contact@techsupplies.com", "phone": "+1-555-0101" },
-    { "id": 2, "name": "Office World Ltd.", "email": "sales@officeworld.com", "phone": "+1-555-0102" },
-    { "id": 3, "name": "Global Distributors", "email": "orders@globaldist.com", "phone": "+1-555-0103" }
+    {
+      "id": 1,
+      "name": "Tech Supplies Inc.",
+      "email": "contact@techsupplies.com",
+      "phone": "+1-555-0101"
+    },
+    {
+      "id": 2,
+      "name": "Office World Ltd.",
+      "email": "sales@officeworld.com",
+      "phone": "+1-555-0102"
+    },
+    {
+      "id": 3,
+      "name": "Global Distributors",
+      "email": "orders@globaldist.com",
+      "phone": "+1-555-0103"
+    }
   ],
   "warehouses": [
-    { "id": 1, "name": "Main Warehouse", "address": "123 Main St, City A, State X, 10001" },
-    { "id": 2, "name": "East Coast Hub", "address": "456 Oak St, City B, State Y, 10002" },
-    { "id": 3, "name": "West Coast Center", "address": "789 Pine St, City C, State Z, 10003" }
+    {
+      "id": 1,
+      "name": "Main Warehouse",
+      "address": "123 Main St, City A, State X, 10001"
+    },
+    {
+      "id": 2,
+      "name": "East Coast Hub",
+      "address": "456 Oak St, City B, State Y, 10002"
+    },
+    {
+      "id": 3,
+      "name": "West Coast Center",
+      "address": "789 Pine St, City C, State Z, 10003"
+    }
   ],
   "products": [
-    { "id": 1, "name": "Wireless Keyboard", "sku": "KB-WL-001", "category": "Electronics" },
-    { "id": 2, "name": "Ergonomic Office Chair", "sku": "CHAIR-ERG-002", "category": "Furniture" },
-    { "id": 3, "name": "Stapler Premium", "sku": "STAPLER-003", "category": "Office Supplies" },
-    { "id": 4, "name": "Monitor 24inch", "sku": "MON-24-004", "category": "Electronics" },
-    { "id": 5, "name": "Desk Organizer", "sku": "ORG-DESK-005", "category": "Office Supplies" }
+    {
+      "id": 1,
+      "name": "Wireless Keyboard",
+      "sku": "KB-WL-001",
+      "category": "Electronics"
+    },
+    {
+      "id": 2,
+      "name": "Ergonomic Office Chair",
+      "sku": "CHAIR-ERG-002",
+      "category": "Furniture"
+    },
+    {
+      "id": 3,
+      "name": "Stapler Premium",
+      "sku": "STAPLER-003",
+      "category": "Office Supplies"
+    },
+    {
+      "id": 4,
+      "name": "Monitor 24inch",
+      "sku": "MON-24-004",
+      "category": "Electronics"
+    },
+    {
+      "id": 5,
+      "name": "Desk Organizer",
+      "sku": "ORG-DESK-005",
+      "category": "Office Supplies"
+    }
   ],
-  "vatRates": [5, 10, 15, 20]
+  "vatRates": [
+    5,
+    10,
+    15,
+    20
+  ]
 }
