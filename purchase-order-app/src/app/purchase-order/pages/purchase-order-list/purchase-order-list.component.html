@@ -1,1 +1,284 @@
-<p>purchase-order-list works!</p>
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="mb-0">
+        <i class="fas fa-file-invoice me-2 text-primary"></i>
+        Purchase Orders
+      </h2>
+      <p class="text-muted mb-0">Manage and track all purchase orders</p>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" (click)="createPurchaseOrder()">
+        <i class="fas fa-plus me-2"></i> Create Purchase Order
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="card mb-4">
+    <div class="card-header bg-light">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-filter me-2"></i>Filters & Search
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="filterForm">
+        <div class="row g-3 align-items-end">
+          <!-- Search Input -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Search</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" class="form-control" formControlName="search" 
+                     placeholder="Search by PO Number, Supplier, Warehouse...">
+            </div>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="col-md-2">
+            <label class="form-label fw-semibold">Status</label>
+            <select class="form-select" formControlName="status">
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+
+          <!-- Start Date -->
+          <div class="col-md-2">
+            <label class="form-label fw-semibold">From Date</label>
+            <input type="date" class="form-control" formControlName="startDate">
+          </div>
+
+          <!-- End Date -->
+          <div class="col-md-2">
+            <label class="form-label fw-semibold">To Date</label>
+            <input type="date" class="form-control" formControlName="endDate">
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="col-md-2">
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+                <i class="fas fa-undo me-1"></i> Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Results Card -->
+  <div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-list me-2"></i>Purchase Orders
+        <span class="badge bg-primary ms-2">{{ totalItems }}</span>
+      </h5>
+      
+      <!-- Results Count -->
+      <div class="text-muted small" *ngIf="!loading && purchaseOrders.length > 0">
+        Showing {{ getDisplayRange().start }} - {{ getDisplayRange().end }} of {{ totalItems }}
+      </div>
+    </div>
+    
+    <div class="card-body p-0">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-2">Loading purchase orders...</p>
+      </div>
+
+      <!-- No Data State -->
+      <div *ngIf="!loading && purchaseOrders.length === 0" class="text-center py-5">
+        <div class="mb-4">
+          <i class="fas fa-inbox fa-4x text-muted"></i>
+        </div>
+        <h4 class="text-muted">No Purchase Orders Found</h4>
+        <p class="text-muted mb-4">Get started by creating your first purchase order</p>
+        <button class="btn btn-primary btn-lg" (click)="createPurchaseOrder()">
+          <i class="fas fa-plus me-2"></i> Create Purchase Order
+        </button>
+      </div>
+
+      <!-- Data Table -->
+      <div *ngIf="!loading && purchaseOrders.length > 0" class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">PO Number</th>
+              <th scope="col">Supplier</th>
+              <th scope="col">Warehouse</th>
+              <th scope="col">Order Date</th>
+              <th scope="col" class="text-end">Total Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="text-center pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let po of purchaseOrders" class="align-middle">
+              <!-- PO Number -->
+              <td class="ps-4">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-file-invoice text-primary me-2"></i>
+                  <div>
+                    <div class="fw-bold text-primary">{{ po.poNumber }}</div>
+                    <small class="text-muted">ID: {{ po.id }}</small>
+                  </div>
+                </div>
+              </td>
+              
+              <!-- Supplier -->
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-truck me-2 text-muted"></i>
+                  <span>{{ getSupplierName(po.supplierId) }}</span>
+                </div>
+              </td>
+              
+              <!-- Warehouse -->
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-warehouse me-2 text-muted"></i>
+                  <span>{{ getWarehouseName(po.warehouseId) }}</span>
+                </div>
+              </td>
+              
+              <!-- Order Date -->
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-calendar me-2 text-muted"></i>
+                  <span>{{ po.orderDate | date:'mediumDate' }}</span>
+                </div>
+              </td>
+              
+              <!-- Total Amount -->
+              <td class="text-end">
+                <div class="fw-bold text-success">{{ po.grandTotal | currency:'USD':'symbol':'1.2-2' }}</div>
+                <small class="text-muted">VAT: {{ po.vatAmount | currency:'USD':'symbol':'1.2-2' }}</small>
+              </td>
+              
+              <!-- Status -->
+              <td>
+                <span [class]="'badge bg-' + getStatusClass(po.status) + ' px-3 py-2'">
+                  <i [class]="getStatusIcon(po.status)" class="me-1"></i>
+                  {{ po.status }}
+                </span>
+              </td>
+              
+              <!-- Actions -->
+              <td class="text-center pe-4">
+                <div class="btn-group btn-group-sm" role="group">
+                  <!-- View Button -->
+                  <button class="btn btn-outline-info" 
+                          (click)="viewPurchaseOrder(po.id!)"
+                          title="View Details"
+                          [disabled]="loading">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  
+                  <!-- Edit Button -->
+                  <button class="btn btn-outline-primary" 
+                          (click)="editPurchaseOrder(po.id!)"
+                          title="Edit"
+                          [disabled]="loading">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  
+                  <!-- Delete Button -->
+                  <button class="btn btn-outline-danger" 
+                          (click)="deletePurchaseOrder(po.id!)"
+                          title="Delete"
+                          [disabled]="loading">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Custom Pagination Footer -->
+    <div *ngIf="!loading && purchaseOrders.length > 0" class="card-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        <!-- Page Info -->
+        <div class="text-muted">
+          Page {{ currentPage }} of {{ getTotalPages() }}
+        </div>
+        
+        <!-- Custom Pagination -->
+        <div>
+          <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0">
+              <!-- First Page -->
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" 
+                   (click)="goToFirstPage()" 
+                   [class.pointer-events-none]="currentPage === 1"
+                   style="cursor: pointer;"
+                   aria-label="First">
+                  <span aria-hidden="true">«</span>
+                </a>
+              </li>
+              
+              <!-- Previous Page -->
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" 
+                   (click)="goToPreviousPage()" 
+                   [class.pointer-events-none]="currentPage === 1"
+                   style="cursor: pointer;"
+                   aria-label="Previous">
+                  <span aria-hidden="true">‹</span>
+                </a>
+              </li>
+              
+              <!-- Page Numbers -->
+              <li *ngFor="let page of getPages()" 
+                  class="page-item" 
+                  [class.active]="page === currentPage">
+                <a class="page-link" 
+                   (click)="goToPage(page)" 
+                   style="cursor: pointer;">
+                  {{ page }}
+                </a>
+              </li>
+              
+              <!-- Next Page -->
+              <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+                <a class="page-link" 
+                   (click)="goToNextPage()" 
+                   [class.pointer-events-none]="currentPage === getTotalPages()"
+                   style="cursor: pointer;"
+                   aria-label="Next">
+                  <span aria-hidden="true">›</span>
+                </a>
+              </li>
+              
+              <!-- Last Page -->
+              <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+                <a class="page-link" 
+                   (click)="goToLastPage()" 
+                   [class.pointer-events-none]="currentPage === getTotalPages()"
+                   style="cursor: pointer;"
+                   aria-label="Last">
+                  <span aria-hidden="true">»</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        
+        <!-- Page Size Info -->
+        <div class="text-muted small">
+          {{ pageSize }} per page
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

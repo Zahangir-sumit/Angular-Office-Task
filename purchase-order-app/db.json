@@ -55,8 +55,8 @@
     },
     {
       "poNumber": "PO-3",
-      "supplierId": "1",
-      "warehouseId": "1",
+      "supplierId": 1,
+      "warehouseId": 1,
       "shippingAddress": "test",
       "vatRate": 15,
       "orderDate": "2025-11-06",
@@ -80,6 +80,144 @@
       "vatAmount": 7.5,
       "grandTotal": 57.5,
       "id": 3
+    },
+    {
+      "poNumber": "PO-4",
+      "supplierId": 1,
+      "warehouseId": 2,
+      "shippingAddress": "test",
+      "vatRate": "5",
+      "orderDate": "2025-11-07",
+      "status": "Draft",
+      "memo": "",
+      "items": [
+        {
+          "productId": "4",
+          "quantity": 1,
+          "unitPrice": 300,
+          "lineTotal": 300
+        }
+      ],
+      "subtotal": 300,
+      "vatAmount": 15,
+      "grandTotal": 315,
+      "id": 4
+    },
+    {
+      "poNumber": "PO-5",
+      "supplierId": 3,
+      "warehouseId": 3,
+      "shippingAddress": "p",
+      "vatRate": "5",
+      "orderDate": "2025-11-07",
+      "status": "Draft",
+      "memo": "",
+      "items": [
+        {
+          "productId": "1",
+          "quantity": 1,
+          "unitPrice": 20,
+          "lineTotal": 20
+        }
+      ],
+      "subtotal": 20,
+      "vatAmount": 1,
+      "grandTotal": 21,
+      "id": 5
+    },
+    {
+      "poNumber": "PO-6",
+      "supplierId": 2,
+      "warehouseId": 1,
+      "shippingAddress": "test",
+      "vatRate": "5",
+      "orderDate": "2025-11-07",
+      "status": "Draft",
+      "memo": "",
+      "items": [
+        {
+          "productId": "2",
+          "quantity": 1,
+          "unitPrice": 20,
+          "lineTotal": 20
+        },
+        {
+          "productId": "3",
+          "quantity": 1,
+          "unitPrice": 30,
+          "lineTotal": 30
+        }
+      ],
+      "subtotal": 50,
+      "vatAmount": 2.5,
+      "grandTotal": 52.5,
+      "id": 6
+    },
+    {
+      "poNumber": "PO-7",
+      "supplierId": 2,
+      "warehouseId": 2,
+      "shippingAddress": "test test",
+      "vatRate": "10",
+      "orderDate": "2025-11-07",
+      "status": "Draft",
+      "memo": "",
+      "items": [
+        {
+          "productId": "4",
+          "quantity": 1,
+          "unitPrice": 200,
+          "lineTotal": 200
+        }
+      ],
+      "subtotal": 200,
+      "vatAmount": 20,
+      "grandTotal": 220,
+      "id": 7
+    },
+    {
+      "poNumber": "PO-8",
+      "supplierId": 1,
+      "warehouseId": 3,
+      "shippingAddress": "test",
+      "vatRate": 15,
+      "orderDate": "2025-11-07",
+      "status": "Draft",
+      "memo": "",
+      "items": [
+        {
+          "productId": "3",
+          "quantity": 1,
+          "unitPrice": 500,
+          "lineTotal": 500
+        }
+      ],
+      "subtotal": 500,
+      "vatAmount": 75,
+      "grandTotal": 575,
+      "id": 8
+    },
+    {
+      "poNumber": "PO-1762514902180",
+      "supplierId": 3,
+      "warehouseId": 2,
+      "shippingAddress": "test",
+      "vatRate": "5",
+      "orderDate": "2025-11-07",
+      "status": "Draft",
+      "memo": "",
+      "items": [
+        {
+          "productId": "3",
+          "quantity": 1,
+          "unitPrice": 50,
+          "lineTotal": 50
+        }
+      ],
+      "subtotal": 50,
+      "vatAmount": 2.5,
+      "grandTotal": 52.5,
+      "id": 9
     }
   ],
   "suppliers": [

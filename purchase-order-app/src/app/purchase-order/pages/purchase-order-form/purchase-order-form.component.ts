@@ -47,6 +47,7 @@ export class PurchaseOrderFormComponent implements OnInit {
 
   createForm(): FormGroup {
     return this.fb.group({
+      poNumber: [''],
       supplierId: ['', Validators.required],
       warehouseId: ['', Validators.required],
       shippingAddress: ['', Validators.required],
@@ -59,6 +60,7 @@ export class PurchaseOrderFormComponent implements OnInit {
 
   get items(): FormArray {
     return this.purchaseOrderForm.get('items') as FormArray;
+
   }
 
   createItemFormGroup(item?: PurchaseOrderItem): FormGroup {
@@ -113,6 +115,7 @@ export class PurchaseOrderFormComponent implements OnInit {
     this.purchaseOrderService.getPurchaseOrder(id).subscribe({
       next: (po) => {
         this.purchaseOrderForm.patchValue({
+          poNumber: po.poNumber,
           supplierId: po.supplierId,
           warehouseId: po.warehouseId,
           shippingAddress: po.shippingAddress,
@@ -186,9 +189,9 @@ export class PurchaseOrderFormComponent implements OnInit {
       const formValue = this.purchaseOrderForm.getRawValue();
       
       const purchaseOrder: PurchaseOrder = {
-        poNumber: this.isEditMode ? `PO-${this.purchaseOrderId}` : this.generatePONumber(),
-        supplierId: formValue.supplierId,
-        warehouseId: formValue.warehouseId,
+        poNumber: this.isEditMode ? formValue.poNumber : this.generatePONumber(),
+        supplierId: parseInt(formValue.supplierId),
+        warehouseId: parseInt(formValue.warehouseId),
         shippingAddress: formValue.shippingAddress,
         vatRate: formValue.vatRate,
         orderDate: formValue.orderDate,
