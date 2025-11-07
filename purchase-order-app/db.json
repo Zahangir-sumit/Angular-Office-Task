@@ -132,7 +132,7 @@
       "shippingAddress": "test",
       "vatRate": "5",
       "orderDate": "2025-11-07",
-      "status": "Draft",
+      "status": "Received",
       "memo": "",
       "items": [
         {
@@ -218,6 +218,72 @@
       "vatAmount": 2.5,
       "grandTotal": 52.5,
       "id": 9
+    },
+    {
+      "poNumber": "PO-1762517849144",
+      "supplierId": 2,
+      "warehouseId": 1,
+      "shippingAddress": "test",
+      "vatRate": "5",
+      "orderDate": "2025-11-07",
+      "status": "Approved",
+      "memo": "",
+      "items": [
+        {
+          "productId": "4",
+          "quantity": 1,
+          "unitPrice": 80,
+          "lineTotal": 80
+        }
+      ],
+      "subtotal": 80,
+      "vatAmount": 4,
+      "grandTotal": 84,
+      "id": 11
+    },
+    {
+      "poNumber": "PO-1762521106102",
+      "supplierId": 1,
+      "warehouseId": 2,
+      "shippingAddress": "test",
+      "vatRate": 15,
+      "orderDate": "2025-11-07",
+      "status": "Approved",
+      "memo": "",
+      "items": [
+        {
+          "productId": "3",
+          "quantity": 1,
+          "unitPrice": 40,
+          "lineTotal": 40
+        }
+      ],
+      "subtotal": 40,
+      "vatAmount": 6,
+      "grandTotal": 46,
+      "id": 12
+    },
+    {
+      "poNumber": "PO-1762524164137",
+      "supplierId": 2,
+      "warehouseId": 3,
+      "shippingAddress": "test",
+      "vatRate": 15,
+      "orderDate": "2025-11-07",
+      "status": "Recieved",
+      "memo": "",
+      "items": [
+        {
+          "productId": "2",
+          "quantity": 1,
+          "unitPrice": 50,
+          "lineTotal": 50
+        }
+      ],
+      "subtotal": 50,
+      "vatAmount": 7.5,
+      "grandTotal": 57.5,
+      "id": 13
     }
   ],
   "suppliers": [

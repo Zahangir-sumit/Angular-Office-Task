@@ -54,7 +54,8 @@ export class PurchaseOrderFormComponent implements OnInit {
       vatRate: [15, Validators.required],
       orderDate: [new Date().toISOString().split('T')[0], Validators.required],
       memo: [''],
-      items: this.fb.array([], [Validators.required, Validators.minLength(1)])
+      items: this.fb.array([], [Validators.required, Validators.minLength(1)]),
+      status: ['', Validators.required]
     });
   }
 
@@ -121,7 +122,8 @@ export class PurchaseOrderFormComponent implements OnInit {
           shippingAddress: po.shippingAddress,
           vatRate: po.vatRate,
           orderDate: po.orderDate,
-          memo: po.memo
+          memo: po.memo,
+          status: po.status
         });
 
         // Clear existing items and add loaded items
@@ -195,7 +197,7 @@ export class PurchaseOrderFormComponent implements OnInit {
         shippingAddress: formValue.shippingAddress,
         vatRate: formValue.vatRate,
         orderDate: formValue.orderDate,
-        status: 'Draft',
+        status: formValue.status,
         memo: formValue.memo,
         items: formValue.items.map((item: any) => ({
           productId: item.productId,
