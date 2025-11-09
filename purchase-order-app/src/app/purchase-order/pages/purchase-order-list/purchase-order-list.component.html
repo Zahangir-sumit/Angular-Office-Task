@@ -33,8 +33,7 @@
                 <i class="fas fa-search"></i>
               </span>
               <input type="text" class="form-control" formControlName="search"
-                     placeholder="Search by PO Number, Supplier, Warehouse..."
-                     [disabled]="loading">
+                placeholder="Search by PO Number, Supplier, Warehouse..." [disabled]="loading">
             </div>
           </div>
 
@@ -49,13 +48,18 @@
           <!-- Start Date -->
           <div class="col-md-2">
             <label class="form-label fw-semibold">From Date</label>
-            <input type="date" class="form-control" formControlName="startDate" [disabled]="loading">
+            <input type="text" class="form-control" placeholder="Select start date" bsDatepicker
+              [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }" formControlName="startDate"
+              [disabled]="loading">
+
           </div>
 
           <!-- End Date -->
           <div class="col-md-2">
             <label class="form-label fw-semibold">To Date</label>
-            <input type="date" class="form-control" formControlName="endDate" [disabled]="loading">
+                        <input type="text" class="form-control" placeholder="Select end date" bsDatepicker
+              [bsConfig]="{ dateInputFormat: 'DD-MM-YYYY', containerClass: 'theme-blue' }" formControlName="endDate"
+              [disabled]="loading">
           </div>
 
           <!-- Action Buttons -->
@@ -188,26 +192,20 @@
               <td class="text-center pe-4">
                 <div class="btn-group btn-group-sm" role="group">
                   <!-- View Button -->
-                  <button class="btn btn-outline-info"
-                          (click)="viewPurchaseOrder(po.id!)"
-                          title="View Details"
-                          [disabled]="loading">
+                  <button class="btn btn-outline-info" (click)="viewPurchaseOrder(po.id!)" title="View Details"
+                    [disabled]="loading">
                     <i class="fas fa-eye"></i>
                   </button>
 
                   <!-- Edit Button -->
-                  <button class="btn btn-outline-primary"
-                          (click)="editPurchaseOrder(po.id!)"
-                          title="Edit"
-                          [disabled]="loading">
+                  <button class="btn btn-outline-primary" (click)="editPurchaseOrder(po.id!)" title="Edit"
+                    [disabled]="loading">
                     <i class="fas fa-edit"></i>
                   </button>
 
                   <!-- Delete Button -->
-                  <button class="btn btn-outline-danger"
-                          (click)="deletePurchaseOrder(po.id!)"
-                          title="Delete"
-                          [disabled]="loading">
+                  <button class="btn btn-outline-danger" (click)="deletePurchaseOrder(po.id!)" title="Delete"
+                    [disabled]="loading">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -228,17 +226,9 @@
 
         <!-- Ngx-Bootstrap Pagination -->
         <div>
-          <pagination
-            [totalItems]="totalItems"
-            [itemsPerPage]="pageSize"
-            [(ngModel)]="currentPage"
-            (pageChanged)="onPageChange($event.page)"
-            [maxSize]="5"
-            previousText="‹"
-            nextText="›"
-            firstText="«"
-            lastText="»"
-            class="pagination-sm mb-0">
+          <pagination [totalItems]="totalItems" [itemsPerPage]="pageSize" [(ngModel)]="currentPage"
+            (pageChanged)="onPageChange($event.page)" [maxSize]="5" previousText="‹" nextText="›" firstText="«"
+            lastText="»" class="pagination-sm mb-0">
           </pagination>
         </div>
 
