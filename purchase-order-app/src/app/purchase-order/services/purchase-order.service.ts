@@ -12,25 +12,42 @@ export class PurchaseOrderService {
   constructor(private http: HttpClient) { }
 
   getPurchaseOrders(filter: PurchaseOrderFilter): Observable<{ data: PurchaseOrder[], total: number }> {
-    let params = new HttpParams()
-      .set('_page', filter.page.toString())
-      .set('_limit', filter.pageSize.toString());
+    // Build query parameters for json-server
+    let params = new HttpParams();
 
-    if (filter.search) {
-      params = params.set('q', filter.search);
+    // Add search parameter (json-server uses 'q' for global search)
+    if (filter.search && filter.search.trim() !== '') {
+      params = params.set('q', filter.search.trim());
     }
+
+    // Add status filter
     if (filter.status && filter.status !== 'All') {
       params = params.set('status', filter.status);
     }
 
-    return this.http.get<PurchaseOrder[]>(`${this.apiUrl}/purchaseOrders`, { 
-      params, 
-      observe: 'response' 
-    }).pipe(
-      map(response => ({
-        data: response.body || [],
-        total: parseInt(response.headers.get('X-Total-Count') || '0', 10)
-      }))
+    // Add date range filters
+    if (filter.startDate) {
+      params = params.set('orderDate_gte', filter.startDate);
+    }
+    if (filter.endDate) {
+      params = params.set('orderDate_lte', filter.endDate);
+    }
+
+    console.log('API Call with params:', params.toString());
+
+    // Get all data with filters first to get total count
+    return this.http.get<PurchaseOrder[]>(`${this.apiUrl}/purchaseOrders`, { params }).pipe(
+      map(allData => {
+        // Apply manual pagination on the client side
+        const startIndex = (filter.page - 1) * filter.pageSize;
+        const endIndex = startIndex + filter.pageSize;
+        const paginatedData = allData.slice(startIndex, endIndex);
+
+        return {
+          data: paginatedData,
+          total: allData.length
+        };
+      })
     );
   }
 

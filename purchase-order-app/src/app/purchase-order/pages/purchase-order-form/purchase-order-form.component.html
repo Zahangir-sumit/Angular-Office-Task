@@ -44,7 +44,7 @@
             <!-- Supplier -->
             <div class="mb-3">
               <label class="form-label fw-semibold">Supplier <span class="text-danger">*</span></label>
-              <select class="form-control" formControlName="supplierId" 
+              <select class="form-control" formControlName="supplierId"
                       [class.is-invalid]="isFieldInvalid('supplierId')">
                 <option value="">Select Supplier</option>
                 <option *ngFor="let supplier of suppliers" [value]="supplier.id">
@@ -206,13 +206,13 @@
             </div>
 
           </div>
-          
+
         </div>
 
         <div class="card">
           <div class="card-header bg-light">
             <h5 class="card-title mb-0">
-              <i class="fa-solid fa-pen"></i> Status
+              <i class="fa-solid fa-floppy-disk"></i> Status
             </h5>
           </div>
           <div class="card-body">
@@ -220,7 +220,7 @@
             <div class="row pt-2 ">
               <div class="mb-3">
               <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-              <select class="form-control" formControlName="status" 
+              <select class="form-control" formControlName="status"
                       [class.is-invalid]="isFieldInvalid('status')">
                 <option value="">Select Status</option>
                 <option value="Draft" >Draft</option>
@@ -233,7 +233,7 @@
             </div>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>

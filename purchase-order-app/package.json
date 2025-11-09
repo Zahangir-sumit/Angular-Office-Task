@@ -32,7 +32,7 @@
     "@angular/compiler-cli": "^20.0.0",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.18.0",
-    "concurrently": "^8.2.0",
+    "concurrently": "^8.2.2",
     "jasmine-core": "~5.1.0",
     "json-server": "^0.17.4",
     "karma": "~6.4.0",

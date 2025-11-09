@@ -9,7 +9,7 @@
       <p class="text-muted mb-0">Manage and track all purchase orders</p>
     </div>
     <div class="col-auto">
-      <button class="btn btn-primary" (click)="createPurchaseOrder()">
+      <button class="btn btn-primary" (click)="createPurchaseOrder()" [disabled]="loading">
         <i class="fas fa-plus me-2"></i> Create Purchase Order
       </button>
     </div>
@@ -32,15 +32,16 @@
               <span class="input-group-text">
                 <i class="fas fa-search"></i>
               </span>
-              <input type="text" class="form-control" formControlName="search" 
-                     placeholder="Search by PO Number, Supplier, Warehouse...">
+              <input type="text" class="form-control" formControlName="search"
+                     placeholder="Search by PO Number, Supplier, Warehouse..."
+                     [disabled]="loading">
             </div>
           </div>
 
           <!-- Status Filter -->
           <div class="col-md-2">
             <label class="form-label fw-semibold">Status</label>
-            <select class="form-select" formControlName="status">
+            <select class="form-select" formControlName="status" [disabled]="loading">
               <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
             </select>
           </div>
@@ -48,19 +49,19 @@
           <!-- Start Date -->
           <div class="col-md-2">
             <label class="form-label fw-semibold">From Date</label>
-            <input type="date" class="form-control" formControlName="startDate">
+            <input type="date" class="form-control" formControlName="startDate" [disabled]="loading">
           </div>
 
           <!-- End Date -->
           <div class="col-md-2">
             <label class="form-label fw-semibold">To Date</label>
-            <input type="date" class="form-control" formControlName="endDate">
+            <input type="date" class="form-control" formControlName="endDate" [disabled]="loading">
           </div>
 
           <!-- Action Buttons -->
           <div class="col-md-2">
             <div class="d-grid gap-2">
-              <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+              <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()" [disabled]="loading">
                 <i class="fas fa-undo me-1"></i> Clear
               </button>
             </div>
@@ -75,15 +76,16 @@
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
       <h5 class="card-title mb-0">
         <i class="fas fa-list me-2"></i>Purchase Orders
-        <span class="badge bg-primary ms-2">{{ totalItems }}</span>
+        <span class="badge bg-primary ms-2" *ngIf="!loading">{{ totalItems }}</span>
+        <span class="badge bg-secondary ms-2" *ngIf="loading">...</span>
       </h5>
-      
+
       <!-- Results Count -->
       <div class="text-muted small" *ngIf="!loading && purchaseOrders.length > 0">
         Showing {{ getDisplayRange().start }} - {{ getDisplayRange().end }} of {{ totalItems }}
       </div>
     </div>
-    
+
     <div class="card-body p-0">
       <!-- Loading State -->
       <div *ngIf="loading" class="text-center py-5">
@@ -93,8 +95,20 @@
         <p class="text-muted mt-2">Loading purchase orders...</p>
       </div>
 
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="text-center py-5">
+        <div class="mb-4">
+          <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+        </div>
+        <h4 class="text-danger">Error Loading Data</h4>
+        <p class="text-muted mb-4">{{ error }}</p>
+        <button class="btn btn-primary" (click)="loadPurchaseOrders()">
+          <i class="fas fa-redo me-2"></i> Try Again
+        </button>
+      </div>
+
       <!-- No Data State -->
-      <div *ngIf="!loading && purchaseOrders.length === 0" class="text-center py-5">
+      <div *ngIf="!loading && !error && purchaseOrders.length === 0" class="text-center py-5">
         <div class="mb-4">
           <i class="fas fa-inbox fa-4x text-muted"></i>
         </div>
@@ -106,7 +120,7 @@
       </div>
 
       <!-- Data Table -->
-      <div *ngIf="!loading && purchaseOrders.length > 0" class="table-responsive">
+      <div *ngIf="!loading && !error && purchaseOrders.length > 0" class="table-responsive">
         <table class="table table-hover mb-0">
           <thead class="table-light">
             <tr>
@@ -131,7 +145,7 @@
                   </div>
                 </div>
               </td>
-              
+
               <!-- Supplier -->
               <td>
                 <div class="d-flex align-items-center">
@@ -139,7 +153,7 @@
                   <span>{{ getSupplierName(po.supplierId) }}</span>
                 </div>
               </td>
-              
+
               <!-- Warehouse -->
               <td>
                 <div class="d-flex align-items-center">
@@ -147,7 +161,7 @@
                   <span>{{ getWarehouseName(po.warehouseId) }}</span>
                 </div>
               </td>
-              
+
               <!-- Order Date -->
               <td>
                 <div class="d-flex align-items-center">
@@ -155,13 +169,13 @@
                   <span>{{ po.orderDate | date:'mediumDate' }}</span>
                 </div>
               </td>
-              
+
               <!-- Total Amount -->
               <td class="text-end">
                 <div class="fw-bold text-success">{{ po.grandTotal | currency:'USD':'symbol':'1.2-2' }}</div>
                 <small class="text-muted">VAT: {{ po.vatAmount | currency:'USD':'symbol':'1.2-2' }}</small>
               </td>
-              
+
               <!-- Status -->
               <td>
                 <span [class]="'badge bg-' + getStatusClass(po.status) + ' px-3 py-2'">
@@ -169,28 +183,28 @@
                   {{ po.status }}
                 </span>
               </td>
-              
+
               <!-- Actions -->
               <td class="text-center pe-4">
                 <div class="btn-group btn-group-sm" role="group">
                   <!-- View Button -->
-                  <button class="btn btn-outline-info" 
+                  <button class="btn btn-outline-info"
                           (click)="viewPurchaseOrder(po.id!)"
                           title="View Details"
                           [disabled]="loading">
                     <i class="fas fa-eye"></i>
                   </button>
-                  
+
                   <!-- Edit Button -->
-                  <button class="btn btn-outline-primary" 
+                  <button class="btn btn-outline-primary"
                           (click)="editPurchaseOrder(po.id!)"
                           title="Edit"
                           [disabled]="loading">
                     <i class="fas fa-edit"></i>
                   </button>
-                  
+
                   <!-- Delete Button -->
-                  <button class="btn btn-outline-danger" 
+                  <button class="btn btn-outline-danger"
                           (click)="deletePurchaseOrder(po.id!)"
                           title="Delete"
                           [disabled]="loading">
@@ -204,76 +218,30 @@
       </div>
     </div>
 
-    <!-- Custom Pagination Footer -->
-    <div *ngIf="!loading && purchaseOrders.length > 0" class="card-footer">
+    <!-- Pagination Footer -->
+    <div *ngIf="!loading && !error && purchaseOrders.length > 0" class="card-footer">
       <div class="d-flex justify-content-between align-items-center">
         <!-- Page Info -->
         <div class="text-muted">
           Page {{ currentPage }} of {{ getTotalPages() }}
         </div>
-        
-        <!-- Custom Pagination -->
+
+        <!-- Ngx-Bootstrap Pagination -->
         <div>
-          <nav aria-label="Page navigation">
-            <ul class="pagination pagination-sm mb-0">
-              <!-- First Page -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <a class="page-link" 
-                   (click)="goToFirstPage()" 
-                   [class.pointer-events-none]="currentPage === 1"
-                   style="cursor: pointer;"
-                   aria-label="First">
-                  <span aria-hidden="true">«</span>
-                </a>
-              </li>
-              
-              <!-- Previous Page -->
-              <li class="page-item" [class.disabled]="currentPage === 1">
-                <a class="page-link" 
-                   (click)="goToPreviousPage()" 
-                   [class.pointer-events-none]="currentPage === 1"
-                   style="cursor: pointer;"
-                   aria-label="Previous">
-                  <span aria-hidden="true">‹</span>
-                </a>
-              </li>
-              
-              <!-- Page Numbers -->
-              <li *ngFor="let page of getPages()" 
-                  class="page-item" 
-                  [class.active]="page === currentPage">
-                <a class="page-link" 
-                   (click)="goToPage(page)" 
-                   style="cursor: pointer;">
-                  {{ page }}
-                </a>
-              </li>
-              
-              <!-- Next Page -->
-              <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
-                <a class="page-link" 
-                   (click)="goToNextPage()" 
-                   [class.pointer-events-none]="currentPage === getTotalPages()"
-                   style="cursor: pointer;"
-                   aria-label="Next">
-                  <span aria-hidden="true">›</span>
-                </a>
-              </li>
-              
-              <!-- Last Page -->
-              <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
-                <a class="page-link" 
-                   (click)="goToLastPage()" 
-                   [class.pointer-events-none]="currentPage === getTotalPages()"
-                   style="cursor: pointer;"
-                   aria-label="Last">
-                  <span aria-hidden="true">»</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
+          <pagination
+            [totalItems]="totalItems"
+            [itemsPerPage]="pageSize"
+            [(ngModel)]="currentPage"
+            (pageChanged)="onPageChange($event.page)"
+            [maxSize]="5"
+            previousText="‹"
+            nextText="›"
+            firstText="«"
+            lastText="»"
+            class="pagination-sm mb-0">
+          </pagination>
         </div>
-        
+
         <!-- Page Size Info -->
         <div class="text-muted small">
           {{ pageSize }} per page

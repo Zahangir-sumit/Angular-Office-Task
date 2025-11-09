@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { PurchaseOrder, PurchaseOrderFilter, Supplier, Warehouse } from '../../models/purchase-order.model';
 import { PurchaseOrderService } from '../../services/purchase-order.service';
 
@@ -10,7 +11,7 @@ import { PurchaseOrderService } from '../../services/purchase-order.service';
   templateUrl: './purchase-order-list.component.html',
   styleUrls: ['./purchase-order-list.component.css']
 })
-export class PurchaseOrderListComponent implements OnInit {
+export class PurchaseOrderListComponent implements OnInit, OnDestroy {
   purchaseOrders: PurchaseOrder[] = [];
   suppliers: Supplier[] = [];
   warehouses: Warehouse[] = [];
@@ -19,6 +20,9 @@ export class PurchaseOrderListComponent implements OnInit {
   pageSize = 10;
   totalItems = 0;
   loading = false;
+  error: string | null = null;
+
+  private destroy$ = new Subject<void>();
 
   statusOptions = ['All', 'Draft', 'Approved', 'Received'];
 
@@ -38,96 +42,71 @@ export class PurchaseOrderListComponent implements OnInit {
   ngOnInit(): void {
     this.loadPurchaseOrders();
     this.loadMasterData();
-    
-    // Subscribe to form changes for real-time filtering
-    this.filterForm.valueChanges.subscribe(() => {
-      this.currentPage = 1;
-      this.loadPurchaseOrders();
-    });
+
+    // Use debounce to prevent too many API calls
+    this.filterForm.valueChanges
+      .pipe(
+        debounceTime(500), // Wait 500ms after user stops typing
+        distinctUntilChanged(), // Only emit when value changes
+        takeUntil(this.destroy$) // Clean up on component destroy
+      )
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadPurchaseOrders();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadPurchaseOrders(): void {
     this.loading = true;
+    this.error = null;
+
     const filter: PurchaseOrderFilter = {
       ...this.filterForm.value,
       page: this.currentPage,
       pageSize: this.pageSize
     };
 
+    console.log('Loading purchase orders with filter:', filter);
+
     this.purchaseOrderService.getPurchaseOrders(filter).subscribe({
       next: (response) => {
+        console.log('Received response:', response);
         this.purchaseOrders = response.data;
         this.totalItems = response.total;
         this.loading = false;
+        this.error = null;
       },
       error: (error) => {
         console.error('Error loading purchase orders:', error);
         this.loading = false;
-        alert('Error loading purchase orders. Please try again.');
+        this.error = 'Failed to load purchase orders. Please try again.';
+        this.purchaseOrders = [];
+        this.totalItems = 0;
       }
     });
   }
 
   loadMasterData(): void {
-    this.purchaseOrderService.getSuppliers().subscribe(data => this.suppliers = data);
-    this.purchaseOrderService.getWarehouses().subscribe(data => this.warehouses = data);
+    this.purchaseOrderService.getSuppliers().subscribe({
+      next: (data) => this.suppliers = data,
+      error: (error) => console.error('Error loading suppliers:', error)
+    });
+
+    this.purchaseOrderService.getWarehouses().subscribe({
+      next: (data) => this.warehouses = data,
+      error: (error) => console.error('Error loading warehouses:', error)
+    });
   }
 
-  // Pagination methods
-  getTotalPages(): number {
-    return Math.ceil(this.totalItems / this.pageSize);
-  }
-
-  getPages(): number[] {
-    const totalPages = this.getTotalPages();
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      // Show all pages if total pages is less than max visible
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Calculate start and end pages
-      let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
-      let endPage = startPage + maxVisiblePages - 1;
-      
-      // Adjust if end page exceeds total pages
-      if (endPage > totalPages) {
-        endPage = totalPages;
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-      
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-    }
-    
-    return pages;
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.getTotalPages() && page !== this.currentPage) {
-      this.currentPage = page;
-      this.loadPurchaseOrders();
-    }
-  }
-
-  goToFirstPage(): void {
-    this.goToPage(1);
-  }
-
-  goToLastPage(): void {
-    this.goToPage(this.getTotalPages());
-  }
-
-  goToPreviousPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-
-  goToNextPage(): void {
-    this.goToPage(this.currentPage + 1);
+  onPageChange(page: number): void {
+    console.log('Page changed to:', page);
+    this.currentPage = page;
+    this.loadPurchaseOrders();
   }
 
   createPurchaseOrder(): void {
@@ -144,13 +123,14 @@ export class PurchaseOrderListComponent implements OnInit {
 
   deletePurchaseOrder(id: number): void {
     if (confirm('Are you sure you want to delete this purchase order? This action cannot be undone.')) {
+      this.loading = true;
       this.purchaseOrderService.deletePurchaseOrder(id).subscribe({
         next: () => {
           this.loadPurchaseOrders();
-          alert('Purchase order deleted successfully.');
         },
         error: (error) => {
           console.error('Error deleting purchase order:', error);
+          this.loading = false;
           alert('Error deleting purchase order. Please try again.');
         }
       });
@@ -185,8 +165,6 @@ export class PurchaseOrderListComponent implements OnInit {
   }
 
   getSupplierName(supplierId: number): string {
-    console.log(this.suppliers);
-    console.log(supplierId);
     const supplier = this.suppliers.find(s => s.id === supplierId);
     return supplier ? supplier.name : `Supplier ${supplierId}`;
   }
@@ -201,5 +179,10 @@ export class PurchaseOrderListComponent implements OnInit {
     const start = (this.currentPage - 1) * this.pageSize + 1;
     const end = Math.min(this.currentPage * this.pageSize, this.totalItems);
     return { start, end };
+  }
+
+  // Helper method to calculate total pages
+  getTotalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
   }
 }

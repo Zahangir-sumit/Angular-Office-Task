@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 // Ngx-Bootstrap modules
@@ -24,8 +24,9 @@ const routes: Routes = [
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule, // ← This is REQUIRED for ngModel in pagination
     RouterModule.forChild(routes),
-    PaginationModule
+    PaginationModule.forRoot() // ← Use forRoot() here
   ]
 })
 export class PurchaseOrderModule { }
