@@ -1,6 +1,8 @@
+// src/app/services/purchase-order.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { PurchaseOrder, Supplier, Warehouse, Product, PurchaseOrderFilter } from '../models/purchase-order.model';
 
 @Injectable({
@@ -12,74 +14,79 @@ export class PurchaseOrderService {
   constructor(private http: HttpClient) { }
 
   getPurchaseOrders(filter: PurchaseOrderFilter): Observable<{ data: PurchaseOrder[], total: number }> {
-    // Build query parameters for json-server
     let params = new HttpParams();
 
-    // Add search parameter (json-server uses 'q' for global search)
-    if (filter.search && filter.search.trim() !== '') {
+    // global search
+    if (filter.search?.trim()) {
       params = params.set('q', filter.search.trim());
     }
 
-    // Add status filter
+    // status filter
     if (filter.status && filter.status !== 'All') {
       params = params.set('status', filter.status);
     }
 
-    // Add date range filters
-    if (filter.startDate) {
-      params = params.set('orderDate_gte', filter.startDate);
-    }
-    if (filter.endDate) {
-      params = params.set('orderDate_lte', filter.endDate);
-    }
+    // date filters (convert Date -> YYYY-MM-DD if needed)
+    const toDateParam = (v: any) => {
+      if (!v) return null;
+      if (v instanceof Date) return v.toISOString().split('T')[0];
+      if (typeof v === 'string' && v.includes('T')) return new Date(v).toISOString().split('T')[0];
+      return v.toString();
+    };
 
-    console.log('API Call with params:', params.toString());
+    const start = toDateParam(filter.startDate);
+    const end = toDateParam(filter.endDate);
+    if (start) params = params.set('orderDate_gte', start);
+    if (end) params = params.set('orderDate_lte', end);
 
-    // Get all data with filters first to get total count
-    return this.http.get<PurchaseOrder[]>(`${this.apiUrl}/purchaseOrders`, { params }).pipe(
-      map(allData => {
-        // Apply manual pagination on the client side
-        const startIndex = (filter.page - 1) * filter.pageSize;
-        const endIndex = startIndex + filter.pageSize;
-        const paginatedData = allData.slice(startIndex, endIndex);
+    // Server-side pagination using json-server _page and _limit
+    const page = Math.max(1, filter.page || 1);
+    const limit = Math.max(1, filter.pageSize || 10);
+    params = params.set('_page', page.toString()).set('_limit', limit.toString());
 
-        return {
-          data: paginatedData,
-          total: allData.length
-        };
-      })
-    );
+    // Use observe: 'response' to read X-Total-Count header
+    return this.http.get<PurchaseOrder[]>(`${this.apiUrl}/purchaseOrders`, { params, observe: 'response' })
+      .pipe(
+        map((resp: HttpResponse<PurchaseOrder[]>) => {
+          const totalHeader = resp.headers.get('X-Total-Count');
+          const total = totalHeader ? Number(totalHeader) : (resp.body ? resp.body.length : 0);
+          return {
+            data: resp.body || [],
+            total
+          };
+        })
+      );
   }
 
-  getPurchaseOrder(id: number): Observable<PurchaseOrder> {
+  getPurchaseOrder(id: number) {
     return this.http.get<PurchaseOrder>(`${this.apiUrl}/purchaseOrders/${id}`);
   }
 
-  createPurchaseOrder(po: PurchaseOrder): Observable<PurchaseOrder> {
+  createPurchaseOrder(po: PurchaseOrder) {
     return this.http.post<PurchaseOrder>(`${this.apiUrl}/purchaseOrders`, po);
   }
 
-  updatePurchaseOrder(id: number, po: PurchaseOrder): Observable<PurchaseOrder> {
+  updatePurchaseOrder(id: number, po: PurchaseOrder) {
     return this.http.put<PurchaseOrder>(`${this.apiUrl}/purchaseOrders/${id}`, po);
   }
 
-  deletePurchaseOrder(id: number): Observable<void> {
+  deletePurchaseOrder(id: number) {
     return this.http.delete<void>(`${this.apiUrl}/purchaseOrders/${id}`);
   }
 
-  getSuppliers(): Observable<Supplier[]> {
+  getSuppliers() {
     return this.http.get<Supplier[]>(`${this.apiUrl}/suppliers`);
   }
 
-  getWarehouses(): Observable<Warehouse[]> {
+  getWarehouses() {
     return this.http.get<Warehouse[]>(`${this.apiUrl}/warehouses`);
   }
 
-  getProducts(): Observable<Product[]> {
+  getProducts() {
     return this.http.get<Product[]>(`${this.apiUrl}/products`);
   }
 
-  getVatRates(): Observable<number[]> {
+  getVatRates() {
     return this.http.get<number[]>(`${this.apiUrl}/vatRates`);
   }
 }

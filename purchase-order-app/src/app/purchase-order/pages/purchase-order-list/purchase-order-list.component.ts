@@ -1,7 +1,9 @@
+// src/app/purchase-order-list/purchase-order-list.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil, catchError } from 'rxjs/operators';
 import { PurchaseOrder, PurchaseOrderFilter, Supplier, Warehouse } from '../../models/purchase-order.model';
 import { PurchaseOrderService } from '../../services/purchase-order.service';
 
@@ -23,6 +25,7 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   private destroy$ = new Subject<void>();
+  private loadTrigger$ = new Subject<PurchaseOrderFilter>();
 
   statusOptions = ['All', 'Draft', 'Approved', 'Received'];
 
@@ -40,20 +43,44 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadPurchaseOrders();
+    // Master data
     this.loadMasterData();
 
-    // Use debounce to prevent too many API calls
-    this.filterForm.valueChanges
-      .pipe(
-        debounceTime(500), // Wait 500ms after user stops typing
-        distinctUntilChanged(), // Only emit when value changes
-        takeUntil(this.destroy$) // Clean up on component destroy
-      )
-      .subscribe(() => {
-        this.currentPage = 1;
-        this.loadPurchaseOrders();
-      });
+    // Centralized loader: debounce rapid triggers and cancel previous in-flight requests
+    this.loadTrigger$.pipe(
+      debounceTime(150),
+      // if multiple triggers come, cancel previous HTTP via switchMap
+      switchMap((filter: PurchaseOrderFilter) => {
+        this.loading = true;
+        this.error = null;
+        // Call service
+        return this.purchaseOrderService.getPurchaseOrders(filter).pipe(
+          catchError(err => {
+            console.error('API error', err);
+            // Return a fallback so stream doesn't break
+            return of({ data: [], total: 0 });
+          })
+        );
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe((resp) => {
+      this.purchaseOrders = resp.data;
+      this.totalItems = resp.total;
+      this.loading = false;
+    });
+
+    // Hook form changes to trigger load (debounced)
+    this.filterForm.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(), // compares references; OK for our use-case
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.triggerLoad();
+    });
+
+    // Initial load
+    this.triggerLoad();
   }
 
   ngOnDestroy(): void {
@@ -61,52 +88,42 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadPurchaseOrders(): void {
-    this.loading = true;
-    this.error = null;
-
+  // Build filter object from form + paging and push into loadTrigger$
+  private triggerLoad(): void {
+    const fv = this.filterForm.value;
     const filter: PurchaseOrderFilter = {
-      ...this.filterForm.value,
+      search: fv.search,
+      status: fv.status,
+      startDate: fv.startDate,
+      endDate: fv.endDate,
       page: this.currentPage,
       pageSize: this.pageSize
     };
+    console.log('Trigger load with filter:', filter);
+    this.loadTrigger$.next(filter);
+  }
 
-    console.log('Loading purchase orders with filter:', filter);
-
-    this.purchaseOrderService.getPurchaseOrders(filter).subscribe({
-      next: (response) => {
-        console.log('Received response:', response);
-        this.purchaseOrders = response.data;
-        this.totalItems = response.total;
-        this.loading = false;
-        this.error = null;
-      },
-      error: (error) => {
-        console.error('Error loading purchase orders:', error);
-        this.loading = false;
-        this.error = 'Failed to load purchase orders. Please try again.';
-        this.purchaseOrders = [];
-        this.totalItems = 0;
-      }
-    });
+  loadPurchaseOrders(): void {
+    // kept for manual button retry and backwards compatibility
+    this.triggerLoad();
   }
 
   loadMasterData(): void {
-    this.purchaseOrderService.getSuppliers().subscribe({
+    this.purchaseOrderService.getSuppliers().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => this.suppliers = data,
-      error: (error) => console.error('Error loading suppliers:', error)
+      error: (err) => console.error('Error loading suppliers:', err)
     });
 
-    this.purchaseOrderService.getWarehouses().subscribe({
+    this.purchaseOrderService.getWarehouses().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => this.warehouses = data,
-      error: (error) => console.error('Error loading warehouses:', error)
+      error: (err) => console.error('Error loading warehouses:', err)
     });
   }
 
   onPageChange(page: number): void {
-    console.log('Page changed to:', page);
+    if (page === this.currentPage) return;
     this.currentPage = page;
-    this.loadPurchaseOrders();
+    this.triggerLoad();
   }
 
   createPurchaseOrder(): void {
@@ -122,28 +139,30 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
   }
 
   deletePurchaseOrder(id: number): void {
-    if (confirm('Are you sure you want to delete this purchase order? This action cannot be undone.')) {
-      this.loading = true;
-      this.purchaseOrderService.deletePurchaseOrder(id).subscribe({
-        next: () => {
-          this.loadPurchaseOrders();
-        },
-        error: (error) => {
-          console.error('Error deleting purchase order:', error);
-          this.loading = false;
-          alert('Error deleting purchase order. Please try again.');
-        }
-      });
-    }
+    if (!confirm('Are you sure you want to delete this purchase order? This action cannot be undone.')) return;
+
+    this.loading = true;
+    this.purchaseOrderService.deletePurchaseOrder(id).subscribe({
+      next: () => {
+        // after delete, re-trigger load (stay on same page if possible)
+        this.triggerLoad();
+      },
+      error: (error) => {
+        console.error('Error deleting purchase order:', error);
+        this.loading = false;
+        alert('Error deleting purchase order. Please try again.');
+      }
+    });
   }
 
   clearFilters(): void {
-    this.filterForm.reset({
+    this.filterForm.setValue({
       search: '',
       status: 'All',
       startDate: '',
       endDate: ''
     });
+    // triggerLoad will be called via valueChanges subscription
   }
 
   getStatusClass(status: string): string {
@@ -174,15 +193,14 @@ export class PurchaseOrderListComponent implements OnInit, OnDestroy {
     return warehouse ? warehouse.name : `Warehouse ${warehouseId}`;
   }
 
-  // Helper to calculate display range for pagination
-  getDisplayRange(): { start: number, end: number } {
+  getDisplayRange(): { start: number; end: number } {
+    if (this.totalItems === 0) return { start: 0, end: 0 };
     const start = (this.currentPage - 1) * this.pageSize + 1;
     const end = Math.min(this.currentPage * this.pageSize, this.totalItems);
     return { start, end };
   }
 
-  // Helper method to calculate total pages
   getTotalPages(): number {
-    return Math.ceil(this.totalItems / this.pageSize);
+    return Math.max(1, Math.ceil(this.totalItems / this.pageSize));
   }
 }
