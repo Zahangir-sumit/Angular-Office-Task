@@ -51,7 +51,7 @@
       "shippingAddress": "test",
       "vatRate": 15,
       "orderDate": "2025-11-09",
-      "status": "Approved",
+      "status": "Draft",
       "memo": "",
       "items": [
         {
@@ -139,7 +139,7 @@
       "shippingAddress": "test",
       "vatRate": 15,
       "orderDate": "2025-11-09",
-      "status": "Approved",
+      "status": "Received",
       "memo": "",
       "items": [
         {
