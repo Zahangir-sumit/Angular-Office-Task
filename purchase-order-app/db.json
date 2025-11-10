@@ -263,6 +263,28 @@
       "vatAmount": 4.95,
       "grandTotal": 37.95,
       "id": 12
+    },
+    {
+      "poNumber": "PO-1762754222163",
+      "supplierId": 1,
+      "warehouseId": 1,
+      "shippingAddress": "test",
+      "vatRate": 15,
+      "orderDate": "2025-11-10",
+      "status": "Received",
+      "memo": "",
+      "items": [
+        {
+          "productId": "1",
+          "quantity": 1,
+          "unitPrice": 12,
+          "lineTotal": 12
+        }
+      ],
+      "subtotal": 12,
+      "vatAmount": 1.8,
+      "grandTotal": 13.8,
+      "id": 13
     }
   ],
   "suppliers": [
